@@ -84,7 +84,6 @@ app.get('/api/html', async function (req, res) {
 
 app.get('/api/json', async function (req, res) {
   try {
-    console.log(req.query.q);
     res.json(await request_http(req.query.q));
   } catch (error) {
     res.status(500).json({ message: err.message });
