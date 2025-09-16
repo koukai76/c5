@@ -3,6 +3,8 @@ const https = require('https');
 const zlib = require('zlib');
 const iconv = require('iconv-lite');
 const cors = require('cors');
+const fetch2 = require('isomorphic-fetch');
+const { parse } = require('node-html-parser');
 
 const app = express();
 
@@ -94,6 +96,33 @@ app.get('/api/te', async function (req, res) {
   res.send('ok');
 });
 
+app.get('/api/win', async function (req, res) {
+  try {
+    const _re = await fetch(process.env.WIN, {
+      method: 'get',
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
+      },
+    });
+
+    const doc = parse(await _re.text());
+    const ret = doc
+      .querySelector('#historyTable_0')
+      .querySelectorAll('tr')[1]
+      .querySelectorAll('td')[2].textContent;
+
+    await fetch2(process.env.PUSH + `?title=win&body=${ret}`, {
+      headers: {
+        Authorization: 'Bearer abcxyz',
+      },
+    });
+
+    res.send('win');
+  } catch (error) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 const server = app.listen(process.env.PORT || 3000, function () {
   console.log('Node.js is listening to PORT:' + server.address().port);
